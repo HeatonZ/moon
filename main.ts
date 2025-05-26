@@ -1,7 +1,8 @@
 import puppeteer from "npm:puppeteer-core"
 import EXCEL from "npm:exceljs"
 import { Buffer } from "node:buffer";
-import * as _ from "npm:lodash";
+import lodash from "npm:lodash";
+
 
 /**
  * asin
@@ -30,12 +31,19 @@ const timeout = 90000
 page.setDefaultNavigationTimeout(90000)
 page.setDefaultTimeout(90000)
 const getValue = async (element: any, key: string) => {
-  return await element?.evaluate((el: any) => _.get(el, key))
+  return await element?.evaluate((el: any, {key}: any) => {
+    // console.log(params)
+    //return lodash.get(el, key)
+    return el[key]
+  }, {
+    lodash,
+    key
+  })
 }
 const handleOnePage = async (page:puppeteer.Page) => {
   await page.waitForSelector('div[role=listitem]', {timeout})
-  const items = await page.$$('div[role=listitem]')
-    
+  let items = await page.$$('div[role=listitem]')
+  // items = [items[0]]
   const res = await Promise.all(items.map(async item => {
     const titleElement = await item.$('div[data-cy=title-recipe]')
     const title = await titleElement?.evaluate(el => el.innerText);
